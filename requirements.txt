@@ -1,0 +1,2 @@
+odroid_wiringpi
+git+https://github.com/unims77/odroid_c1_dht11.git
