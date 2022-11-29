@@ -18,28 +18,29 @@ D3: 12
 D4: 13
  */
 
-const byte digitalPins[] = {2, 3, 4, 5, 6, 7, 8, 9};
+const byte digitalPins[] = {2, 3, 5, 6, 7, 8, 9};
 int digitalPinLenght = 0;
 
 const byte segmentPins[] = {10, 11, 12, 13};
 int segmentPinLenght = 0;
 
-const int buttonPin = 0;
+const int buttonPin = 4;
 int buttonState = 0;
 
 int loopIndex = 0;
+bool isPressed = false;
 
 int digitalNumbers[10][8] = {
-    {1, 1, 1, 1, 1, 0, 1, 1}, // 0
-    {0, 0, 0, 0, 1, 0, 1, 0}, // 1
-    {1, 0, 0, 1, 1, 1, 0, 1}, // 2
-    {1, 1, 0, 1, 0, 1, 0, 1}, // 3
-    {1, 1, 0, 0, 0, 1, 1, 0}, // 4
-    {0, 1, 0, 1, 0, 1, 1, 1}, // 5
-    {0, 1, 0, 1, 1, 1, 1, 1}, // 6
-    {1, 1, 0, 0, 0, 0, 0, 1}, // 7
-    {1, 1, 0, 1, 1, 1, 1, 1}, // 8
-    {1, 1, 0, 1, 0, 1, 1, 1}, // 9
+    {1, 1, /*1,*/ 1, 1, 0, 1, 1}, // 0
+    {0, 0, /*0,*/ 0, 1, 0, 1, 0}, // 1
+    {1, 0, /*0,*/ 1, 1, 1, 0, 1}, // 2
+    {1, 1, /*0,*/ 1, 0, 1, 0, 1}, // 3
+    {1, 1, /*0,*/ 0, 0, 1, 1, 0}, // 4
+    {0, 1, /*0,*/ 1, 0, 1, 1, 1}, // 5
+    {0, 1, /*0,*/ 1, 1, 1, 1, 1}, // 6
+    {1, 1, /*0,*/ 0, 0, 0, 0, 1}, // 7
+    {1, 1, /*0,*/ 1, 1, 1, 1, 1}, // 8
+    {1, 1, /*0,*/ 1, 0, 1, 1, 1}, // 9
 };
 int dititalNumberLength = 0;
 
@@ -70,12 +71,24 @@ void setup()
 
 void loop()
 {
-  // initialize the digital pins
-  for (size_t i = 0; i < dititalNumberLength; i++)
-  {
-    digitalWrite(digitalPins[i], digitalNumbers[loopIndex][i]);
-  }
+  buttonState = digitalRead(buttonPin);
 
-  loopIndex = loopIndex == dititalNumberLength - 1 ? 0 : loopIndex + 1;
-  delay(500);
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonState == HIGH) {
+    // turn on:
+    if (!isPressed) {
+      Serial.println("pressed");
+      isPressed = true;
+      // initialize the digital pins
+      for (size_t i = 0; i < dititalNumberLength; i++)
+      {
+        digitalWrite(digitalPins[i], digitalNumbers[loopIndex][i]);
+      }
+
+      loopIndex = loopIndex == dititalNumberLength - 1 ? 0 : loopIndex + 1;
+    }
+  } else {
+    // turn off:
+    isPressed = false;
+  }
 }
