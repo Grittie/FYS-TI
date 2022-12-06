@@ -18,7 +18,7 @@ D3: 12
 D4: 13
  */
 
-const byte digitalPins[] = {2, 3, 5, 6, 7, 8, 9};
+const byte digitalPins[] = {2, 3, /*4,*/ 5, 6, 7, 8, 9};
 int digitalPinLenght = 0;
 
 const byte segmentPins[] = {10, 11, 12, 13};
@@ -43,6 +43,7 @@ int digitalNumbers[10][8] = {
     {1, 1, /*0,*/ 1, 0, 1, 1, 1}, // 9
 };
 int dititalNumberLength = 0;
+char buffer[5];
 
 // the setup routine runs once when you press reset:
 void setup()
@@ -69,25 +70,48 @@ void setup()
   pinMode(buttonPin, INPUT);
 }
 
+void setDitgitalNumber(int number)
+{
+  sprintf(buffer, "%04d", number);
+  Serial.println(buffer);
+
+  for (size_t i = 0; i < segmentPinLenght; i++)
+  {
+    digitalWrite(segmentPins[i], HIGH);
+    for (size_t j = 0; j < segmentPinLenght; j++)
+    {
+      if (j != i)
+      {
+        digitalWrite(segmentPins[j], LOW);
+      }
+    }
+
+    for (size_t j = 0; j < dititalNumberLength; j++)
+    {
+      int n = buffer[i] - '0';
+      digitalWrite(digitalPins[j], digitalNumbers[loopIndex][j]);
+    }
+  }
+}
+
 void loop()
 {
   buttonState = digitalRead(buttonPin);
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (buttonState == HIGH) {
+  if (buttonState == HIGH)
+  {
     // turn on:
-    if (!isPressed) {
-      Serial.println("pressed");
+    if (!isPressed)
+    {
+      Serial.println("pressed?");
+      setDitgitalNumber(loopIndex);
+      loopIndex++;
       isPressed = true;
-      // initialize the digital pins
-      for (size_t i = 0; i < dititalNumberLength; i++)
-      {
-        digitalWrite(digitalPins[i], digitalNumbers[loopIndex][i]);
-      }
-
-      loopIndex = loopIndex == dititalNumberLength - 1 ? 0 : loopIndex + 1;
     }
-  } else {
+  }
+  else
+  {
     // turn off:
     isPressed = false;
   }
