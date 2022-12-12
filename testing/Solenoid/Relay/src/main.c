@@ -8,7 +8,7 @@
 int relayPins[] = {10, 11};
 int relayLength = 0;
 int relayIndex = 0;
-int up_length = 800;
+int up_length = 50;
 
 void enable_relay() {
     // Turn the relay on
