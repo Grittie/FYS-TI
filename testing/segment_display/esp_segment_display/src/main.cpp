@@ -13,7 +13,7 @@ byte segmentPins[] = {9, 46, 16, 18, 8, 3, 15, 17};
 
 int relayPins[] = {10, 11};
 int relayCooldown[] = {0, 0};
-int relayUpTime = 100;
+int relayUpTime = 1;
 
 int relayIndex = 1;
 int relayLength = 0;
@@ -26,13 +26,13 @@ int currentPressDelay = 0;
 
 void enable_relay()
 {
+  relayIndex = relayIndex < relayLength - 1 ? relayIndex + 1 : 0;
   if (relayCooldown[relayIndex] <= 0)
   {
     Serial.printf("TURN ON: %d \n", relayPins[relayIndex]);
     digitalWrite(relayPins[relayIndex], HIGH);
     relayCooldown[relayIndex] = relayUpTime;
   }
-  relayIndex = relayIndex < relayLength - 1 ? relayIndex + 1 : 0;
 }
 
 void update_counter()
@@ -71,7 +71,7 @@ void Task1code(void *pvParameters)
   Serial.print("Task1 running on core ");
   Serial.println(xPortGetCoreID());
 
-  while (true)
+  for (;;)
   {
     buttonState = digitalRead(buttonPin);
     if (buttonState == LOW)
@@ -101,24 +101,24 @@ void Task2code(void *pvParameters)
   Serial.print("Task2 running on core ");
   Serial.println(xPortGetCoreID());
 
-  while (true)
+  for (;;)
   {
     for (size_t i = 0; i < relayLength; i++)
     {
-      // Serial.printf("Relay check %d: %d\n", i, relayCooldown[i]);
-      if (relayCooldown[i] > 0)
+      if (relayCooldown[i] == 0)
       {
-        // Serial.printf("Relay cooldown %d: %d\n", i, relayCooldown[i]);
+        digitalWrite(relayPins[i], LOW);
+        relayCooldown[i] = 0;
+        // Serial.printf("Turn off: %d\n", relayPins[relayIndex]);
+      }
+      else if (relayCooldown[i] > 0)
+      {
         relayCooldown[i]--;
-
-        if (relayCooldown[i] <= 0)
-        {
-          // Serial.printf("Relay cooldown over %d: %d\n", i, relayCooldown[i]);
-          digitalWrite(relayPins[relayIndex], LOW);
-          relayCooldown[i] = 0;
-        }
+        // Serial.printf("Count: %d | %d\n", relayPins[relayIndex], relayCooldown[i]);
       }
     }
+
+    delay(200);
   }
 }
 
