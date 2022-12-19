@@ -18,7 +18,7 @@ int relayUpTime = 1;
 int relayIndex = 1;
 int relayLength = 0;
 
-int buttonPin = 13;
+int buttonPin = 18;
 int buttonState = 0;
 bool isPressed = false;
 int pressDelay = 10;
@@ -29,7 +29,7 @@ void enable_relay()
   relayIndex = relayIndex < relayLength - 1 ? relayIndex + 1 : 0;
   if (relayCooldown[relayIndex] <= 0)
   {
-    //Serial.printf("TURN ON: %d \n", relayPins[relayIndex]);
+    Serial.printf("TURN ON: %d \n", relayPins[relayIndex]);
     digitalWrite(relayPins[relayIndex], HIGH);
     relayCooldown[relayIndex] = relayUpTime;
   }
@@ -74,7 +74,7 @@ void Task1code(void *pvParameters)
   for (;;)
   {
     buttonState = digitalRead(buttonPin);
-    if (buttonState == LOW)
+    if (buttonState == HIGH)
     {
       if (!isPressed && currentPressDelay <= 0)
       {
@@ -150,11 +150,6 @@ void setup()
   sevseg.setBrightness(90);
 
   reset();
-  for (size_t i = 0; i < 10; i++)
-  {
-      delay(500);
-      add_number(1);
-  }
 }
 
 void loop()
