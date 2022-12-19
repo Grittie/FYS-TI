@@ -19,10 +19,11 @@ int relayIndex = 1;
 int relayLength = 0;
 
 int buttonPin = 5;
+int buttonLedPin = 21;
 int buttonState = 0;
 int buttonPressedState = LOW;
 bool isPressed = false;
-int pressDelay = 1000;
+int pressDelay = 500;
 int currentPressDelay = 0;
 
 void next_relay() {
@@ -107,8 +108,11 @@ void Task1code(void *pvParameters)
     }
 
     if (currentPressDelay > 0) {
-
+      digitalWrite(buttonLedPin, LOW);
+    } else {
+      digitalWrite(buttonLedPin, HIGH);
     }
+
     sevseg.refreshDisplay();
     delay(1);
   }
@@ -159,6 +163,7 @@ void setup()
 
   // Setup the pins
   pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(buttonLedPin, GPIO_MODE_OUTPUT);
 
   for (size_t i = 0; i < relayLength; i++)
   {
