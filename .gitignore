@@ -120,3 +120,8 @@ venv.bak/
 
 # VSCode
 .vscode
+
+# Misc
+.DS_store
+Thumbs.db 
+*.swp
