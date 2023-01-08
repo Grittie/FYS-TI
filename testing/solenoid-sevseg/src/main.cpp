@@ -39,14 +39,6 @@ void enable_relay()
     digitalWrite(relayPins[relayIndex], HIGH);
     relayCooldown[relayIndex] = relayUpTime;
   } 
-  //else {
-  //   digitalWrite(relayPins[relayIndex], LOW);
-  //   relayCooldown[relayIndex] = 0;
-
-  //   next_relay();
-  //   digitalWrite(relayPins[relayIndex], HIGH);
-  //   relayCooldown[relayIndex] = relayUpTime;
-  // }
 }
 
 void update_counter()
@@ -136,7 +128,6 @@ void Task2code(void *pvParameters)
       else if (relayCooldown[i] > 0)
       {
         relayCooldown[i]--;
-        // Serial.printf("Count: %d | %d\n", relayPins[relayIndex], relayCooldown[i]);
       }
     }
     delay(500);
@@ -178,7 +169,5 @@ void setup()
 
 void loop()
 {
-  //delay(1000);
-  //add_number(1);
-  //Serial.println("Loop");
+  
 }

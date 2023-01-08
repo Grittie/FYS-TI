@@ -18,7 +18,7 @@ int relayUpTime = 1;
 int relayIndex = 1;
 int relayLength = 0;
 
-int buttonPin = 18;
+int buttonPin = 36;
 int buttonState = 0;
 bool isPressed = false;
 int pressDelay = 10;
@@ -125,33 +125,35 @@ void Task2code(void *pvParameters)
 void setup()
 {
   Serial.begin(115200);
+  Serial.println("tarwrt");
 
-  // Create threads
-  xTaskCreatePinnedToCore(Task1code, "Task1", 10000, NULL, 1, &Task1, 0);
-  delay(500);
-  xTaskCreatePinnedToCore(Task2code, "Task2", 10000, NULL, 1, &Task2, 1);
-  delay(500);
+  // // Create threads
+  // xTaskCreatePinnedToCore(Task1code, "Task1", 10000, NULL, 1, &Task1, 0);
+  // delay(500);
+  // xTaskCreatePinnedToCore(Task2code, "Task2", 10000, NULL, 1, &Task2, 1);
+  // delay(500);
 
-  // Setup the values
-  byte numDigits = sizeof(digitPins) / sizeof(digitPins[0]);
-  relayLength = sizeof(relayPins) / sizeof(relayPins[0]);
-  bool resistorsOnSegments = 0;
-  currentPressDelay = pressDelay;
+  // // Setup the values
+  // byte numDigits = sizeof(digitPins) / sizeof(digitPins[0]);
+  // relayLength = sizeof(relayPins) / sizeof(relayPins[0]);
+  // bool resistorsOnSegments = 0;
+  // currentPressDelay = pressDelay;
 
-  // Setup the pins
-  pinMode(buttonPin, INPUT_PULLUP);
-  for (size_t i = 0; i < relayLength; i++)
-  {
-    pinMode(relayPins[i], OUTPUT);
-  }
+  // // Setup the pins
+  // pinMode(buttonPin, INPUT_PULLUP);
+  // for (size_t i = 0; i < relayLength; i++)
+  // {
+  //   pinMode(relayPins[i], OUTPUT);
+  // }
 
-  // Setup the segment display
-  sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins, resistorsOnSegments);
-  sevseg.setBrightness(90);
+  // // Setup the segment display
+  // sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins, resistorsOnSegments);
+  // sevseg.setBrightness(90);
 
-  reset();
+  // reset();
 }
 
 void loop()
 {
+  Serial.println("help2");
 }
