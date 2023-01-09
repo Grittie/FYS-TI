@@ -7,7 +7,6 @@ portList = []
 portAddress = []
 
 for onePort in ports:
-
     portList.append(str(onePort))
     port = (str(onePort))
     split_port = port.split(" ", 1)
@@ -15,11 +14,11 @@ for onePort in ports:
     portAddress.append(substring)
 
 for address in portAddress:
-    print(address)    
-# arduino = serial.Serial('COM1', 115200, timeout=.1)
+    
+ arduino = serial.Serial(address, 115200, timeout=.1)
 
-# while True:
-#     data = arduino.readline()[:-2]
-#     if data:
-#         print data
+ while True:
+     data = arduino.readline()[:-2]
+     if data:
+         print(data)
 
