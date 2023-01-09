@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-const int knockPin = 8;
+const int knockPin = 5;
 const int ledPin = 7;
 
 int knockVal = HIGH;
