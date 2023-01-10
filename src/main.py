@@ -32,11 +32,10 @@ buttons = [
     Button(4, 0),
     Button(5, 0),
     Button(6, 0),
-    Button(7, 0),
-    Button(8, 0),
-    Button(9, 0)
+    Button(7, 0)
 ]  # Which buttons can be pressed
 interactable_buttons = []
+start_button_index = 3
 
 game_started = False
 button_enable_delay = 1  # How much time before another button will be turned on
@@ -88,10 +87,10 @@ def check_esp_connection(esp):
 
 
 def check_button_state(button):
-    if keyboard.is_pressed(str(button.pin)) and button.is_pressed == False:
+    if keyboard.is_pressed(str(button.pin)) and button.is_pressed is False:
         button.is_pressed = True
         return True
-    elif keyboard.is_release(str(button.pin)) and button.is_pressed == True:
+    elif keyboard.is_pressed(str(button.pin)) is False and button.is_pressed is True:
         button.is_pressed = False
 
     return False
@@ -99,7 +98,7 @@ def check_button_state(button):
 
 def check_input(args):
     global score
-    logging.info("Thread %s: starting check_input", threading.current_thread().name)
+    logging.info("Thread %s: INPUT", threading.current_thread().name)
 
     while True:
         if game_started:
@@ -132,16 +131,14 @@ def set_idle_state():
     print("[Game phase: IDLE]")
     play_audio('bg_idle', True)
     print("Press 'p' to start")
-
-    while True:
-        try:
-            print("Waiting for input...")
-            if keyboard.is_pressed('p'):
-                print('Yea \n')
-                #set_play_state()
-                break
-        except:
-            break
+    set_play_state()
+    # while True:
+    #     try:
+    #         if keyboard.is_pressed('p'):
+    #             set_play_state()
+    #             break
+    #     except:
+    #         break
 
 
 def start_countdown():
@@ -154,7 +151,7 @@ def start_countdown():
 
 
 def get_interactable_buttons():
-    return interactable_buttons;
+    return interactable_buttons
 
 
 def set_button_state(button, state):
