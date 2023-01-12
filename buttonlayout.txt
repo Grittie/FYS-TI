@@ -1,0 +1,5 @@
+        Button 1 (LED=17, BTN=8)                Button 2 (LED=4, BTN=18)
+
+Button 3 (LED=5, BTN=3)     Button 4 (LED=6, BTN=9)     Button 5 (LED=16, BTN=11)
+
+        Button 6 (LED=7, BTN=46)                Button 7 (LED=15, BTN=10)
