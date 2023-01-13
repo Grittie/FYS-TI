@@ -1,7 +1,11 @@
 from db_connection import db
+import time
 
 cur = db.cursor()
 
+def timestamp():
+    ts = time.time()
+    return ts
 
 def insert_into_devicedata(dData):
     sql = "INSERT INTO devicedata (logid, timestamp, temperature, humidity, knockStatus, deviceStatus) VALUES (%s, %s, %s, %s, %s, %s)"

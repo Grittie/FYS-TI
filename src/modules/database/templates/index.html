@@ -3,44 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <title>db_dashboard</title>
-  <link rel="stylesheet" href="..\static\css\index.css">
-</head>
-<body>
+  <link rel="stylesheet" type="text/css" href="../static/index.css">
+
 
 <header class="topnav">
     <h1>Cor & Don's whacky adventures</h1>
     <p>Door: Lucas, Lars, Tristan, Toine en Jasper</p>
 </header>
 
+</head>
+<body>
 
-<div class="container" id="devicedata">
-<table>
-    <tr>
-        <th>logid</th>
-        <th>timestamp</th>
-        <th>temp (C)</th>
-        <th>humidity</th>
-        <th>knockStatus</th>
-        <th>deviceStatus</th>
+
+<div class="div__devicedata">
+<table class="table">
+    <tr class="table__header">
+        {% for header in devicedataheadings %}
+        <th>{{ header }}</th>
+        {% endfor%}
     </tr>
+
+    {% for row in devicedata %}
+    <tr class="table__row">
+        {% for cell in row %}
+        <td class="table__cell">{{ cell }} </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
 </table>
 </div>
 
 
-<div class="container" id="userdata">
-<table>
-    <tr>
-        <th>sessionId</th>
-        <th>timestamp</th>
-        <th>sessionDuration</th>
-        <th>score</th>
+<div class="div__userdata">
+<table class="table">
+
+    <tr class="table__header">
+        {% for header in userdataheadings %}
+        <th>{{ header }}</th>
+        {% endfor%}
     </tr>
+
+
+    {% for row in userdata %}
+    <tr class="table__row">
+        {% for cell in row %}
+        <td class="table__cell">{{ cell }} </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
 </table>
 </div>
 
-<button class="button" onclick="testbuttons">Test de knoppen</button>
-<button class="button"  onclick="testmascotte">Test de mascottes</button>
-<button class="button"  onclick="testmatrix">Test de matrixes</button>
+<div class="buttons">
+    <button class="button1" onclick="testbuttons">Test de knoppen</button>
+    <button class="button2"  onclick="testmascotte">Test de mascottes</button>
+    <button class="button3"  onclick="testmatrix">Test de matrixes</button>
+</div>
 
 </body>
 </html>
