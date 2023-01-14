@@ -76,11 +76,15 @@ score = 0  # Score of the player in this session
 result_duration = 10  # How long the result will be shown
 
 # Sensor data
+sensor_update_interval = 10  # How often the sensor data will be updated in seconds
 temperature_data = 0
 
 
 def start():
     print("Booting... \n")
+
+    form = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=form, level=logging.INFO, datefmt="%H:%M:%S")
     wpi.wiringPiSetup()
 
     initialize_database()
@@ -113,13 +117,16 @@ def initialize_sensors():
         try:
             dht = dht11_sensor.get_temperature()
             print('DHT11 Sensor: {0}'.format(dht))
-        except:
-            print('DHT11: ERROR')
+        except Exception as e:
+            logging.exception(e)
             break
 
         success = True
 
     print("RESP: {0} \n".format(success and 'SUCCESS' or 'ERROR'))
+    if success is True:
+        sensor_data = threading.Thread(target=update_sensor_data, args=(1,))
+        sensor_data.start()
 
 
 def initialize_speakers():
@@ -136,10 +143,20 @@ def check_esp_connection(esp):
 
 def update_sensor_data():
     global temperature_data
-    dht11_sensor = DHT11Sensor(0)
 
-    print('Updating sensor data')
-    temperature_data = dht11_sensor.get_temperature()
+    while True:
+        print('Updating sensor data')
+
+        # Update temperature
+        try:
+            dht11_sensor = DHT11Sensor(0)
+            temperature_data = dht11_sensor.get_temperature()
+            print('Temperature: {0}'.format(temperature_data))
+        except Exception as e:
+            logging.exception(e)
+            temperature_data = -1
+
+        time.sleep(sensor_update_interval)
 
 
 def check_button_state(button):
@@ -175,8 +192,6 @@ def check_input(args):
 def start_game():
     print("Starting game logic...\n")
 
-    form = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=form, level=logging.INFO, datefmt="%H:%M:%S")
     button_input = threading.Thread(target=check_input, args=(1,))
     button_input.start()
 
