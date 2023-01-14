@@ -3,6 +3,24 @@ import logging
 import time
 import keyboard
 import random
+import odroid_dht11 as dht11
+
+
+class HumiditySensor:
+    def __init__(self, pin):
+        self.pin = pin
+
+    def get_temperature(self):
+        instance = dht11.DHT11(self.pin)
+        result = instance.read()
+        if result.is_valid():
+            return result.temperature
+
+    def get_humidity(self):
+        instance = dht11.DHT11(self.pin)
+        result = instance.read()
+        if result.is_valid():
+            return result.humidity
 
 
 class Button:
@@ -70,7 +88,15 @@ def initialize_database():
 
 def initialize_sensors():
     print("Initializing sensors...")
-    # TODO: initialize sensors
+
+    # Initialize humidity sensor
+    humidity_sensor = HumiditySensor(0)
+    try :
+        humidity = humidity_sensor.get_humidity()
+        print('Humidity: {0}'.format(humidity))
+    except:
+        print('Humidity: ERROR')
+
     print("RESP: SUCCESS \n")
 
 
