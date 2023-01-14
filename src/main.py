@@ -1,12 +1,18 @@
+# Threads
 import threading
 import logging
+
+# Game
 import time
 import keyboard
 import random
+
+# Sensors
 import odroid_dht11 as dht11
+import odroid_wiringpi as wpi
 
 
-class HumiditySensor:
+class DHT11Sensor:
     def __init__(self, pin):
         self.pin = pin
 
@@ -15,12 +21,16 @@ class HumiditySensor:
         result = instance.read()
         if result.is_valid():
             return result.temperature
+        else:
+            raise Exception("Invalid temperature reading")
 
     def get_humidity(self):
         instance = dht11.DHT11(self.pin)
         result = instance.read()
         if result.is_valid():
             return result.humidity
+        else:
+            raise Exception("Invalid humidity reading")
 
 
 class Button:
@@ -65,9 +75,13 @@ score = 0  # Score of the player in this session
 # Game RESULTS
 result_duration = 10  # How long the result will be shown
 
+# Sensor data
+temperature_data = 0
+
 
 def start():
     print("Booting... \n")
+    wpi.wiringPiSetup()
 
     initialize_database()
     initialize_sensors()
@@ -88,16 +102,24 @@ def initialize_database():
 
 def initialize_sensors():
     print("Initializing sensors...")
+    success = False
+    attempt = 0
 
-    # Initialize humidity sensor
-    humidity_sensor = HumiditySensor(0)
-    try :
-        humidity = humidity_sensor.get_humidity()
-        print('Humidity: {0}'.format(humidity))
-    except:
-        print('Humidity: ERROR')
+    while success is False and attempt < 3:
+        attempt += 1
 
-    print("RESP: SUCCESS \n")
+        # Initialize humidity sensor
+        dht11_sensor = DHT11Sensor(0)
+        try:
+            dht = dht11_sensor.get_temperature()
+            print('DHT11 Sensor: {0}'.format(dht))
+        except:
+            print('DHT11: ERROR')
+            break
+
+        success = True
+
+    print("RESP: {0} \n".format(success and 'SUCCESS' or 'ERROR'))
 
 
 def initialize_speakers():
@@ -110,6 +132,14 @@ def check_esp_connection(esp):
     print('Check ESP_{0} connection...'.format(esp))
     # TODO: check esp connection
     print("RESP: SUCCESS \n")
+
+
+def update_sensor_data():
+    global temperature_data
+    dht11_sensor = DHT11Sensor(0)
+
+    print('Updating sensor data')
+    temperature_data = dht11_sensor.get_temperature()
 
 
 def check_button_state(button):
