@@ -11,6 +11,14 @@ import random
 import odroid_dht11 as dht11
 import odroid_wiringpi as wpi
 
+# Matrix
+from luma.led_matrix.device import max7219
+from luma.core.interface.serial import spi, noop
+from luma.core.render import canvas
+from luma.core.legacy import text, show_message
+from luma.core.legacy.font import proportional, LCD_FONT
+from luma.core.virtual import viewport
+
 
 class DHT11Sensor:
     def __init__(self, pin):
@@ -79,6 +87,11 @@ result_duration = 10  # How long the result will be shown
 sensor_update_interval = 10  # How often the sensor data will be updated in seconds
 temperature_data = 0
 
+# Matrix
+serial = None
+device = None
+virtual = None
+
 
 def start():
     print("Booting... \n")
@@ -90,6 +103,7 @@ def start():
     initialize_database()
     initialize_sensors()
     initialize_speakers()
+    initialize_matrix()
     check_esp_connection(0)
     check_esp_connection(1)
     print("Initialization success!\n")
@@ -132,6 +146,20 @@ def initialize_sensors():
 def initialize_speakers():
     print("Initialize speakers...")
     # TODO: initialize speakers
+    print("RESP: SUCCESS \n")
+
+
+def initialize_matrix():
+    print('Initialize matrix')
+    global serial
+    global device
+    global virtual
+
+    wpi.pinMode(0, wpi.GPIO.OUTPUT)
+    serial = spi(port=0, device=0, gpio=noop())
+    device = max7219(serial, cascaded=2, block_orientation=90, rotate=0, blocks_arranged_in_reverse_order=True)
+    virtual = viewport(device, width=200, height=100)
+
     print("RESP: SUCCESS \n")
 
 
@@ -215,6 +243,7 @@ def set_idle_state():
 def start_countdown():
     print('Start countdown')
     for i in range(3, 0, -1):
+        set_matrix_text(str(i), False)
         print(i)
         time.sleep(1)
 
@@ -290,13 +319,19 @@ def set_end_state():
         set_idle_state()
 
 
-def queue_matrix_text(text):
-    print('Queue matrix text: {0}'.format(text))
-
-
-def set_matrix_text():
-    # TODO: Play all the queued text
+def set_matrix_text(text, scrolling):
     print('Set matrix text')
+    if scrolling:
+        with canvas(virtual) as draw:
+            draw.rectangle(device.bounding_box, outline="white", fill="black")
+            draw.text((3, 3), text, fill="white")
+
+        for offset in range(8):
+            virtual.set_position((offset, offset))
+            time.sleep(0.1)
+    else:
+        with canvas(device) as draw:
+            text(draw, (4, 0), text, fill="white", font=proportional(LCD_FONT))
 
 
 def play_audio(name, loop):
