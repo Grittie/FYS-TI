@@ -91,6 +91,13 @@ temperature_data = 0
 serial = None
 device = None
 virtual = None
+matrix_cascaded = 1
+matrix_row_count = 8
+total_matrix_led = 0
+matrix_update_interval = 0.1
+matrix_text = None
+matrix_scroll = False
+matrix_loop = False
 
 
 def start():
@@ -154,11 +161,18 @@ def initialize_matrix():
     global serial
     global device
     global virtual
+    global total_matrix_led
 
     wpi.pinMode(0, wpi.GPIO.OUTPUT)
     serial = spi(port=0, device=0, gpio=noop())
-    device = max7219(serial, cascaded=2, block_orientation=90, rotate=0, blocks_arranged_in_reverse_order=True)
+    device = max7219(serial, cascaded=matrix_cascaded, block_orientation=0, rotate=2,
+                     blocks_arranged_in_reverse_order =True)
     virtual = viewport(device, width=200, height=100)
+    total_matrix_led = matrix_row_count * matrix_cascaded
+
+    # Create a task to update the matrix
+    matrix_task = threading.Thread(target=update_matrix, args=(1,))
+    matrix_task.start()
 
     print("RESP: SUCCESS \n")
 
@@ -243,11 +257,12 @@ def set_idle_state():
 def start_countdown():
     print('Start countdown')
     for i in range(3, 0, -1):
-        set_matrix_text(str(i), False)
+        set_matrix_text(str(i), False, False)
         print(i)
         time.sleep(1)
 
     print('GO!')
+    set_matrix_text("GO", True, False)
 
 
 def get_interactable_buttons():
@@ -319,19 +334,46 @@ def set_end_state():
         set_idle_state()
 
 
-def set_matrix_text(text, scrolling):
+def set_matrix_text(text, scroll, loop):
     print('Set matrix text')
-    if scrolling:
-        with canvas(virtual) as draw:
-            draw.rectangle(device.bounding_box, outline="white", fill="black")
-            draw.text((3, 3), text, fill="white")
+    global matrix_text
+    global matrix_scroll
+    global matrix_loop
 
-        for offset in range(8):
-            virtual.set_position((offset, offset))
-            time.sleep(0.1)
-    else:
-        with canvas(device) as draw:
-            text(draw, (4, 0), text, fill="white", font=proportional(LCD_FONT))
+    matrix_text = text
+    matrix_scroll = scroll
+    matrix_loop = loop
+
+    print("Matrix text: {0}".format(matrix_text))
+
+
+def update_matrix(args):
+    global matrix_text
+    logging.info("Thread %s: Matrix", threading.current_thread().name)
+
+    while True:
+        if matrix_text is not None:
+            if matrix_scroll:
+                with canvas(virtual) as draw:
+                    # draw.rectangle(device.bounding_box, outline="white", fill="black")
+                    draw.text((0, -2), matrix_text, fill="white")
+
+                # Scroll the text until it is off the screen
+                for i in range(virtual.width - device.width):
+                    virtual.set_position((i, 0))
+                    time.sleep(0.1)
+
+                # for offset in range(total_matrix_led):
+                #     virtual.set_position((offset, 0))
+                #     time.sleep(0.1)
+
+                if matrix_loop is False:
+                    matrix_text = None
+            else:
+                # show_message(device, matrix_text, fill="white", font=proportional(LCD_FONT))
+                with canvas(device) as draw:
+                    text(draw, (2, 1), matrix_text, fill="white", font=proportional(LCD_FONT))
+            time.sleep(matrix_update_interval)
 
 
 def play_audio(name, loop):
