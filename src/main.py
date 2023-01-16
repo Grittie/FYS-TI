@@ -87,7 +87,7 @@ result_duration = 10  # How long the result will be shown
 sensor_update_interval = 10  # How often the sensor data will be updated in seconds
 temperature_data = 0
 
-# Matrix
+# Matrix, vcc: 3.3v, gnd: gnd, din: 19, cs: 24, clk: 23
 serial = None
 device = None
 virtual = None
