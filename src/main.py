@@ -4,21 +4,28 @@ import logging
 
 # Game
 import time
-import keyboard
+#import keyboard
 import random
 
 # Sensors
-import odroid_dht11 as dht11
-import odroid_wiringpi as wpi
+#import odroid_dht11 as dht11
+#import odroid_wiringpi as wpi
 
 # Matrix
-from luma.led_matrix.device import max7219
-from luma.core.interface.serial import spi, noop
-from luma.core.render import canvas
-from luma.core.legacy import text, show_message
-from luma.core.legacy.font import proportional, LCD_FONT
-from luma.core.virtual import viewport
+#from luma.led_matrix.device import max7219
+#from luma.core.interface.serial import spi, noop
+#from luma.core.render import canvas
+#from luma.core.legacy import text, show_message
+#from luma.core.legacy.font import proportional, LCD_FONT
+#from luma.core.virtual import viewport
 
+# Database
+from db_functions import db
+from db_functions import get_logid, get_sessionid, insert_into_userdata, insert_into_devicedata, get_timestamp
+
+#start the main.py for the game, and the app.py for the website by running the following commdand in the terminal:
+#the command is comprised of "python /filepath/main.py & /filepath/app.py"
+#python C:\Users\Jasper\projectfys\it102-1\src\main.py & python C:\Users\Jasper\projectfys\it102-1\src\modules\database\app.py
 
 class DHT11Sensor:
     def __init__(self, pin):
@@ -86,6 +93,7 @@ result_duration = 10  # How long the result will be shown
 # Sensor data
 sensor_update_interval = 10  # How often the sensor data will be updated in seconds
 temperature_data = 0
+humidity_data = 0
 
 # Matrix, vcc: 3.3v, gnd: gnd, din: 19, cs: 24, clk: 23
 serial = None
@@ -99,18 +107,22 @@ matrix_text = None
 matrix_scroll = False
 matrix_loop = False
 
+# Database
+deviceId = 1
+data_upload_interval = 600 # how often devicedata will be uploaded in seconds, 600 seconds = 10 minutes
+
 
 def start():
     print("Booting... \n")
 
     form = "%(asctime)s: %(message)s"
     logging.basicConfig(format=form, level=logging.INFO, datefmt="%H:%M:%S")
-    wpi.wiringPiSetup()
+    #wpi.wiringPiSetup()
 
+    #initialize_sensors()
+    #initialize_speakers()
+    #initialize_matrix()
     initialize_database()
-    initialize_sensors()
-    initialize_speakers()
-    initialize_matrix()
     check_esp_connection(0)
     check_esp_connection(1)
     print("Initialization success!\n")
@@ -120,9 +132,32 @@ def start():
 
 
 def initialize_database():
-    print("Initializing database connection...")
-    # TODO: initialize database
-    print("RESP: SUCCESS \n")
+    if db.is_connected() == True:
+        print("DB CONNECTION RESP: SUCCESS \n")
+        #start function that uploads sensordata every 10 minutes
+        upload_sensordata()
+    else:
+        print("DB CONNECTION RESP: FAILED \n")
+
+def upload_sensordata():
+    while True:
+
+        #get the id of the last log then add 1
+        rawlogid = get_logid()
+        corlogid = [x[0] for x in rawlogid]
+        logid = corlogid[0] + 1
+
+        timestamp = get_timestamp().strftime("%Y-%m-%d %H:%M:%S") #.replace("''", "")
+        temperature = 20
+        humidity = 20
+        knockStatus = 1
+        deviceStatus = 1
+
+        #devicedata insert format: logid, timestamp, temperature, humidity, knockStatus, deviceStatus
+        insert_into_devicedata(logid, timestamp, temperature, humidity, knockStatus, deviceStatus)
+
+        print("Data insertion complete")
+        time.sleep(data_upload_interval)
 
 
 def initialize_sensors():
@@ -185,7 +220,7 @@ def check_esp_connection(esp):
 
 def update_sensor_data():
     global temperature_data
-
+    global humidity_data
     while True:
         print('Updating sensor data')
 
@@ -193,7 +228,9 @@ def update_sensor_data():
         try:
             dht11_sensor = DHT11Sensor(0)
             temperature_data = dht11_sensor.get_temperature()
+            humidity_data = dht11_sensor.get_humidity()
             print('Temperature: {0}'.format(temperature_data))
+            print('Humidity: {0}'.format(humidity_data))
         except Exception as e:
             logging.exception(e)
             temperature_data = -1
@@ -318,13 +355,25 @@ def set_play_state():
             break
 
 
-def set_end_state():
+def set_end_state(): #sends the session data to the db at the end of the session
     global cur_play_duration
     global game_started
 
     print("[Game phase: END]")
     play_audio('bg_end', True)
     print("Score: {0}".format(score))
+
+    timestamp = get_timestamp().strftime("%Y-%m-%d %H:%M:%S")
+
+    rawsessionid = get_sessionid()
+    corsessionid = [z[0] for z in rawsessionid]
+    sessionId = corsessionid[0] + 1
+    sessionDuration = cur_play_duration
+
+    # db insert format: sessionId, deviceId, timestamp, sessionDuration, score
+    insert_into_userdata(sessionId, deviceId, timestamp, sessionDuration, score)
+
+    print("Data insertion complete")
 
     cur_play_duration = 0
     game_started = False

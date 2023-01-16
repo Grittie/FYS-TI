@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>db_dashboard</title>
+  <link rel="stylesheet" type="text/css" href="../static/index.css">
+
+<header class="topnav">
+    <h1>Cor & Don's whacky adventures</h1>
+    <p>Door: Lucas, Lars, Tristan, Toine en Jasper</p>
+</header>
+
+</head>
+<body>
+
+
+<div class="div__devicedata">
+<table class="table">
+    <tr class="table__header">
+        {% for header in devicedataheadings %}
+        <th>{{ header }}</th>
+        {% endfor%}
+    </tr>
+
+    {% for row in devicedata %}
+    <tr class="table__row">
+        {% for cell in row %}
+        <td class="table__cell">{{ cell }} </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+
+<div class="div__userdata">
+<table class="table">
+
+    <tr class="table__header">
+        {% for header in userdataheadings %}
+        <th>{{ header }}</th>
+        {% endfor%}
+    </tr>
+
+
+    {% for row in userdata %}
+    <tr class="table__row">
+        {% for cell in row %}
+        <td class="table__cell">{{ cell }} </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+<div class="buttons">
+
+    <form action="testbuttons">
+        <button class="button1">Test de knoppen</button>
+    </form>
+
+    <form action="testmascottes">
+        <button class="button2">Test de mascottes</button>
+    </form>
+
+    <form action="testmatrix">
+        <button class="button3">Test de matrixes</button>
+    </form>
+
+</div>
+
+
+
+</body>
+</html>
