@@ -1,8 +1,7 @@
 #include <Arduino.h>
 
 // Tasks
-TaskHandle_t TSelectUpdate;
-TaskHandle_t TButtonUpdate;
+TaskHandle_t TSelectUpdate, TButtonUpdate, TGameTimer;
 
 // Buttons
 int led_pins[] = {17, 4, 5, 6, 16, 7, 15};
@@ -14,10 +13,12 @@ int sel_button_index = -1;
 int prev_sel_button = -1;
 
 // Games
-int game_timer = 1;
-int current_game_timer = 0;
+int game_timer = 30000;
+float select_timer = 500;
 bool update_game = false;
 int start_button_index = 3;
+int score = 0;
+int result_timer = 10000;
 
 // ESP_L
 int plus_pin = 13;
@@ -40,7 +41,7 @@ void SelectUpdate(void *pvParameters)
       Serial.printf("Pin: %d\n", sel_button_index);
       digitalWrite(led_pins[sel_button_index], HIGH);
 
-      delay(game_timer * 1000);
+      delay(select_timer);
       digitalWrite(led_pins[sel_button_index], LOW);
     }
 
@@ -66,15 +67,17 @@ void ButtonUpdate(void *pvParameters)
             Serial.printf("Pin: %d, LOW \n", i);
             button_states[i] = 1;
 
-            // TEST
-            digitalWrite(plus_pin, HIGH);
             if (sel_button_index == i) {
-              
               Serial.print("ADD POINT \n");
               digitalWrite(led_pins[sel_button_index], LOW);
+              score++;
               sel_button_index = -1;
+              digitalWrite(plus_pin, HIGH);
+              delay(10);
+              digitalWrite(plus_pin, LOW);
             } else {
               Serial.print("REMOVE POINT \n");
+              score--;
             }
           }
         } else if (buttonState == HIGH && button_states[i] == 1) {
@@ -88,14 +91,8 @@ void ButtonUpdate(void *pvParameters)
   }
 }
 
-void create_game_tasks()
-{
-  xTaskCreatePinnedToCore(SelectUpdate, "SelectUpdate", 10000, NULL, 1, &TSelectUpdate, 0);
-  delay(200);
-  xTaskCreatePinnedToCore(ButtonUpdate, "ButtonUpdate", 10000, NULL, 1, &TButtonUpdate, 0);
-}
-
 void start_game() {
+  Serial.println("STATUS: starting game...\n");
   for (size_t i = 0; i < 3; i++)
   {
     Serial.printf("%d\n", i);
@@ -110,22 +107,60 @@ void idle() {
   Serial.println("STATUS: Starting Idle...\n");
 
   update_game = false;
+  score = 0;
   bool start = false;
+
   int led_status = LOW;
   do
   {
     int buttonState = digitalRead(button_pins[start_button_index]);
+    digitalWrite(led_pins[start_button_index], HIGH);
     if (buttonState == LOW) {
       start = true;
     } else {
-      led_status = led_status == LOW ? HIGH : LOW;
-      digitalWrite(led_pins[start_button_index], led_status);
-      delay(500);
+      //led_status = led_status == LOW ? HIGH : LOW;
+      //digitalWrite(led_pins[start_button_index], led_status);
+      //delay(500);
     }
   } while (!start);
 
   digitalWrite(led_pins[start_button_index], LOW);
   start_game();
+}
+
+void ShowResults() {
+  digitalWrite(led_pins[sel_button_index], LOW);
+  sel_button_index = -1;
+  update_game = false;
+
+  Serial.print("STATUS: Results");
+  Serial.printf("Score: %d", score);
+  delay(result_timer);
+  idle();
+}
+
+void GameTimer(void *pvParameters) {
+  Serial.print("ButtonUpdate running on core\n");
+  Serial.println(xPortGetCoreID()); 
+
+  for (;;)
+  {
+    if (update_game) {
+      delay(game_timer);
+      ShowResults();
+    } else {
+      delay(100);
+    }
+  }
+}
+
+void create_game_tasks()
+{
+  xTaskCreatePinnedToCore(SelectUpdate, "SelectUpdate", 10000, NULL, 1, &TSelectUpdate, 0);
+  delay(200);
+  xTaskCreatePinnedToCore(ButtonUpdate, "ButtonUpdate", 10000, NULL, 1, &TButtonUpdate, 0);
+  delay(200);
+  xTaskCreatePinnedToCore(GameTimer, "GameTimer", 10000, NULL, 1, &TGameTimer, 0);
 }
 
 void setup()
