@@ -39,8 +39,7 @@ def index():  # put application's code here
     else:
         devicedata = db_functions.get_devicedata()
         userdata = db_functions.get_userdata()
-
-    return render_template('index.html', devicedataheadings=devicedataheadings, devicedata=devicedata,
+    return render_template('db_dashboard.html', devicedataheadings=devicedataheadings, devicedata=devicedata,
                            userdataheadings=userdataheadings, userdata=userdata)
 
 
