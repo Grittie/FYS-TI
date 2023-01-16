@@ -6,3 +6,5 @@ db = mysql.connector.connect(
     password="",
     database="wacky_adventures"
 )
+
+db.autocommit = False

@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-import jinja2
 import db_functions
 
 app = Flask(__name__)
@@ -12,7 +11,6 @@ def testbuttons():
     # TODO add button test function
     if request.method == 'GET':
         print("testbuttons")
-
     return render_template('testbuttons.html')
 
 
@@ -36,6 +34,7 @@ def index():  # put application's code here
     if request.method == 'GET':
         devicedata = db_functions.get_devicedata()
         userdata = db_functions.get_userdata()
+        print('db_dashboard')
     else:
         devicedata = db_functions.get_devicedata()
         userdata = db_functions.get_userdata()
