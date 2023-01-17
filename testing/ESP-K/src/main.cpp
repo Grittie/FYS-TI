@@ -14,14 +14,16 @@ int prev_sel_button = -1;
 
 // Games
 int game_timer = 30000;
-float select_timer = 500;
+float select_timer = 1000;
 bool update_game = false;
 int start_button_index = 3;
 int score = 0;
 int result_timer = 10000;
+bool is_idle = false;
 
 // ESP_L
-int plus_pin = 13;
+int plus_pin = 1;
+int reset_pin = 2;
 
 void SelectUpdate(void *pvParameters)
 {
@@ -73,7 +75,7 @@ void ButtonUpdate(void *pvParameters)
               score++;
               sel_button_index = -1;
               digitalWrite(plus_pin, HIGH);
-              delay(10);
+              delay(1);
               digitalWrite(plus_pin, LOW);
             } else {
               Serial.print("REMOVE POINT \n");
@@ -93,13 +95,13 @@ void ButtonUpdate(void *pvParameters)
 
 void start_game() {
   Serial.println("STATUS: starting game...\n");
-  for (size_t i = 0; i < 3; i++)
-  {
-    Serial.printf("%d\n", i);
-    delay(1000);
-  }
+  // for (size_t i = 0; i < 3; i++)
+  // {
+  //   Serial.printf("%d\n", i);
+  //   delay(1000);
+  // }
 
-  Serial.print("GO!\n");
+  // Serial.print("GO!\n");
   update_game = true;
 }
 
@@ -107,8 +109,12 @@ void idle() {
   Serial.println("STATUS: Starting Idle...\n");
 
   update_game = false;
-  score = 0;
   bool start = false;
+
+  score = 0;
+  digitalWrite(reset_pin, HIGH);
+  delay(10);
+  digitalWrite(reset_pin, LOW);
 
   int led_status = LOW;
   do
@@ -148,6 +154,7 @@ void GameTimer(void *pvParameters) {
     if (update_game) {
       delay(game_timer);
       ShowResults();
+      delay(100);
     } else {
       delay(100);
     }
@@ -187,6 +194,7 @@ void setup()
   }
 
   pinMode(plus_pin, GPIO_MODE_OUTPUT);
+  pinMode(reset_pin, GPIO_MODE_OUTPUT);
 
   Serial.println("STATUS: Button setup complete...\n");
   create_game_tasks();
