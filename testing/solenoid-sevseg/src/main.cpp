@@ -8,6 +8,7 @@ TaskHandle_t Task2;
 int number = 0;
 char buffer[5];
 
+// 7 Segment display pins
 byte digitPins[] = {15, 2, 0, 4};
 byte segmentPins[] = {13, 14, 33, 26, 27, 12, 32, 25};
 
@@ -18,13 +19,22 @@ int relayUpTime = 1;
 int relayIndex = 1;
 int relayLength = 0;
 
-int buttonPin = 5;
-int buttonLedPin = 21;
-int buttonState = 0;
-int buttonPressedState = LOW;
-bool isPressed = false;
-int pressDelay = 500;
-int currentPressDelay = 0;
+// Pins for recieving data from ESPK
+int plusPin = 23;
+int resetPin = 22;
+
+int plusState = 0;
+int minusState = 0;
+int resetState = 0;
+
+// Decrepit Button Variables
+// int buttonPin = 5;
+// int buttonLedPin = 21;
+// int buttonState = 0;
+// int buttonPressedState = LOW;
+// bool isPressed = false;
+// int pressDelay = 500;
+// int currentPressDelay = 0;
 
 void next_relay() {
   relayIndex = relayIndex < relayLength - 1 ? relayIndex + 1 : 0;
@@ -57,6 +67,7 @@ void set_number(int num)
 void add_number(int amount)
 {
   number += amount;
+  Serial.print(number);
   update_counter();
 }
 
@@ -77,37 +88,59 @@ void Task1code(void *pvParameters)
   Serial.print("Task1 running on core ");
   Serial.println(xPortGetCoreID());
 
+  // Decrepit button code
+  // for (;;)
+  // {
+  //   buttonState = digitalRead(buttonPin);
+  //   //Serial.println(buttonState);
+  //   if (buttonState == buttonPressedState)
+  //   {
+  //     if (!isPressed && currentPressDelay <= 0)
+  //     {
+  //       isPressed = true;
+  //       currentPressDelay = pressDelay;
+  //       add_number(1);
+  //     }
+  //   }
+  //   else
+  //   {
+  //     isPressed = false;
+  //     if (currentPressDelay > 0)
+  //     {
+  //       currentPressDelay--;
+  //     }
+  //   }
+
+  //   if (currentPressDelay > 0) {
+  //     digitalWrite(buttonLedPin, LOW);
+  //   } else {
+  //     digitalWrite(buttonLedPin, HIGH);
+  //   }
+
+    // sevseg.refreshDisplay();
+    // delay(1);
+  // }
+
   for (;;)
   {
-    buttonState = digitalRead(buttonPin);
-    //Serial.println(buttonState);
-    if (buttonState == buttonPressedState)
+    /* code */
+    plusState = digitalRead(plusPin);
+    if (plusState  == HIGH)
     {
-      if (!isPressed && currentPressDelay <= 0)
-      {
-        isPressed = true;
-        currentPressDelay = pressDelay;
-        add_number(1);
-      }
-    }
-    else
-    {
-      isPressed = false;
-      if (currentPressDelay > 0)
-      {
-        currentPressDelay--;
-      }
+      add_number(1);
     }
 
-    if (currentPressDelay > 0) {
-      digitalWrite(buttonLedPin, LOW);
-    } else {
-      digitalWrite(buttonLedPin, HIGH);
+    resetState = digitalRead(resetPin);
+    if (resetPin == HIGH)
+    {
+      Serial.print("reset activated");
+      reset();
     }
 
     sevseg.refreshDisplay();
     delay(1);
   }
+  
 }
 
 void Task2code(void *pvParameters)
@@ -150,11 +183,10 @@ void setup()
   byte numDigits = sizeof(digitPins) / sizeof(digitPins[0]);
   relayLength = sizeof(relayPins) / sizeof(relayPins[0]);
   bool resistorsOnSegments = false;
-  currentPressDelay = pressDelay;
 
-  // Setup the pins
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(buttonLedPin, GPIO_MODE_OUTPUT);
+  // Setup the input pins
+  pinMode(plusPin, GPIO_MODE_INPUT);
+  pinMode(resetPin, GPIO_MODE_INPUT);
 
   for (size_t i = 0; i < relayLength; i++)
   {
