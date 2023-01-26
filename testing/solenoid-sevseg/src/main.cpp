@@ -5,7 +5,7 @@ SevSeg sevseg;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 
-int number = 0;
+int score = 0;
 char buffer[5];
 
 byte digitPins[] = {15, 2, 0, 4};
@@ -26,10 +26,12 @@ bool isPressed = false;
 int pressDelay = 500;
 int currentPressDelay = 0;
 
+/// @brief Increase the relay index
 void next_relay() {
   relayIndex = relayIndex < relayLength - 1 ? relayIndex + 1 : 0;
 } 
 
+/// @brief Method which enables the next relay in the index
 void enable_relay()
 {
   if (relayCooldown[relayIndex] <= 0)
@@ -41,34 +43,39 @@ void enable_relay()
   } 
 }
 
-void update_counter()
+/// @brief Method to update the score and the seven Segment Display
+void update_score()
 {
   enable_relay();
-  sprintf(buffer, "%04d", number);
+  sprintf(buffer, "%04d", score);
   sevseg.setChars(buffer);
 }
 
-void set_number(int num)
+/// @brief Method to set the value of the 7Segment Display
+/// @param num Amount to set the score to
+void set_score(int num)
 {
-  number = num;
-  update_counter();
+  score = num;
+  update_score();
 }
 
-void add_number(int amount)
+/// @brief Method to add to the current score amount
+/// @param amount  
+void add_score(int amount)
 {
-  number += amount;
-  update_counter();
+  score += amount;
+  update_score();
 }
 
-void subtract_number(int amount)
+void subtract_score(int amount)
 {
-  add_number(-amount);
+  add_score(-amount);
 }
 
 void reset()
 {
-  number = 0;
-  sprintf(buffer, "%04d", number);
+  score = 0;
+  sprintf(buffer, "%04d", score);
   sevseg.setChars(buffer);
 }
 
@@ -80,14 +87,13 @@ void Task1code(void *pvParameters)
   for (;;)
   {
     buttonState = digitalRead(buttonPin);
-    //Serial.println(buttonState);
     if (buttonState == buttonPressedState)
     {
       if (!isPressed && currentPressDelay <= 0)
       {
         isPressed = true;
         currentPressDelay = pressDelay;
-        add_number(1);
+        add_score(1);
       }
     }
     else
