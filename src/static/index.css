@@ -1,0 +1,36 @@
+body {  margin: 0; font-family: Arial, Helvetica, sans-serif;}
+
+
+/* Style the top navigation bar */
+.topnav {  overflow: hidden; background-color: black; color: white; margin:auto; align-content: center; align-self: center;}
+
+/* Style the buttons*/
+.button1, .button2, .button3 { padding: 10px; display:inline-block; float: bottom;}
+.buttons { display: inline-block;}
+
+.div__devicedata{
+    float: left;
+    width: 33%;
+}
+
+.div__userdata{
+    float: right;
+    width: 33%;
+}
+
+.table, th, td {
+    border: 1px solid;
+    background-color: white;
+}
+
+.table__row:nth-child(even) {
+    background-color: white;
+}
+
+.table__header{
+    text-align: left;
+}
+
+.table__cell{
+    padding: 8px;
+}

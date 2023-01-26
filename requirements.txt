@@ -1,2 +1,8 @@
 odroid_wiringpi
 git+https://github.com/unims77/odroid_c1_dht11.git
+keyboard~=0.13.5
+luma.led_matrix~=3.5.1
+mysql~=0.0.3
+Jinja2~=3.1.2
+Flask~=2.2.2
+db_functions~=0.0.1
