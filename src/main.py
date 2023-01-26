@@ -22,8 +22,8 @@ from luma.core.legacy.font import proportional, LCD_FONT
 from luma.core.virtual import viewport
 
 # Database
-# from db_functions import db
-# from db_functions import get_logid, get_sessionid, insert_into_userdata, insert_into_devicedata, get_timestamp
+from db_functions import db
+from db_functions import get_logid, get_sessionid, insert_into_userdata, insert_into_devicedata, get_timestamp
 
 # start the main.py for the game, and the app.py for the website by running the following commdand in the terminal:
 # the command is comprised of "python /filepath/main.py & /filepath/app.py"
@@ -85,7 +85,6 @@ class Speaker:
         play_obj = wave_obj.play()
         play_obj.wait_done()
 
-
 game_started = False
 button_enable_delay = 1  # How much time before another button will be turned on
 button_on_time = 2  # How long a button will be active before turning off
@@ -126,6 +125,7 @@ def start():
     wpi.wiringPiSetup()
     initialize_sensors()
     initialize_database()
+
     print("Initialization success!\n")
     print("---------------------------------\n")
 
@@ -134,12 +134,12 @@ def start():
 
 def initialize_database():
     print("DB CONNECTION RESP: SUCCESS \n")
-    # if db.is_connected() == True:
-    #     print("DB CONNECTION RESP: SUCCESS \n")
-    #     #start function that uploads sensordata every 10 minutes
-    #     upload_sensordata()
-    # else:
-    #     print("DB CONNECTION RESP: FAILED \n")
+    if db.is_connected() == True:
+        print("DB CONNECTION RESP: SUCCESS \n")
+        #start function that uploads sensordata every 10 minutes
+        upload_sensordata()
+    else:
+        print("DB CONNECTION RESP: FAILED \n")
 
 
 def upload_sensordata():
@@ -232,7 +232,6 @@ def update_sensor_data(args):
     global humidity_data
     while True:
         print('Updating sensor data')
-
         # Update temperature
         try:
             dht11_sensor = DHT11Sensor(0)
