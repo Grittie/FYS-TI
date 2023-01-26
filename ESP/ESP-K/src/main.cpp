@@ -1,3 +1,7 @@
+/*
+  Program which handles the game state and buttons of the Whacky Adventures System
+  @authors Cor & Don's Whacky Adventures
+*/
 #include <Arduino.h>
 
 // Tasks
