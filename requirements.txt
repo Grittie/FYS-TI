@@ -5,3 +5,4 @@ luma.led_matrix~=3.5.1
 mysql~=0.0.3
 Jinja2~=3.1.2
 Flask~=2.2.2
+db_functions~=0.0.1

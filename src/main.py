@@ -4,28 +4,31 @@ import logging
 
 # Game
 import time
-#import keyboard
 import random
 
 # Sensors
-#import odroid_dht11 as dht11
-#import odroid_wiringpi as wpi
+import odroid_dht11 as dht11
+import odroid_wiringpi as wpi
+
+# Audio
+import simpleaudio as sa
 
 # Matrix
-#from luma.led_matrix.device import max7219
-#from luma.core.interface.serial import spi, noop
-#from luma.core.render import canvas
-#from luma.core.legacy import text, show_message
-#from luma.core.legacy.font import proportional, LCD_FONT
-#from luma.core.virtual import viewport
+from luma.led_matrix.device import max7219
+from luma.core.interface.serial import spi, noop
+from luma.core.render import canvas
+from luma.core.legacy import text, show_message
+from luma.core.legacy.font import proportional, LCD_FONT
+from luma.core.virtual import viewport
 
 # Database
-from db_functions import db
-from db_functions import get_logid, get_sessionid, insert_into_userdata, insert_into_devicedata, get_timestamp
+# from db_functions import db
+# from db_functions import get_logid, get_sessionid, insert_into_userdata, insert_into_devicedata, get_timestamp
 
-#start the main.py for the game, and the app.py for the website by running the following commdand in the terminal:
-#the command is comprised of "python /filepath/main.py & /filepath/app.py"
-#python C:\Users\Jasper\projectfys\it102-1\src\main.py & python C:\Users\Jasper\projectfys\it102-1\src\modules\database\app.py
+# start the main.py for the game, and the app.py for the website by running the following commdand in the terminal:
+# the command is comprised of "python /filepath/main.py & /filepath/app.py"
+# python C:\Users\Jasper\projectfys\it102-1\src\main.py & python C:\Users\Jasper\projectfys\it102-1\src\modules\database\app.py
+
 
 class DHT11Sensor:
     def __init__(self, pin):
@@ -37,7 +40,7 @@ class DHT11Sensor:
         if result.is_valid():
             return result.temperature
         else:
-            raise Exception("Invalid temperature reading")
+            return 19.7# raise Exception("Invalid temperature reading")
 
     def get_humidity(self):
         instance = dht11.DHT11(self.pin)
@@ -45,40 +48,43 @@ class DHT11Sensor:
         if result.is_valid():
             return result.humidity
         else:
-            raise Exception("Invalid humidity reading")
+            return 0# raise Exception("Invalid humidity reading")
 
 
-class Button:
-    is_active = False
-    interactable_time = 0
-    is_pressed = False
-
-    def __init__(self, button_pin, led_pin):
-        self.pin = button_pin
-        self.led_pin = led_pin
-
-    def get_interactable(self):
-        return self.is_active
-
-    def set_interactable(self, state):
-        self.is_active = state
+class Ultrasound:
+    def __init__(self, trigPin, echoPin):
+        self.trigPin = trigPin
+        self.echoPin = echoPin
 
 
-# Game IDLE
-start_countdown = 3  # countdown before starting the game
+    def __pinSetupUltraSound(__trigPin: int, __echoPin: int):
+        wpi.pinMode(__trigPin, wpi.GPIO.OUTPUT)
+        wpi.pinMode(__echoPin, wpi.GPIO.INPUT)
 
-# Game PLAY
-buttons = [
-    Button(1, 0),
-    Button(2, 0),
-    Button(3, 0),
-    Button(4, 0),
-    Button(5, 0),
-    Button(6, 0),
-    Button(7, 0)
-]  # Which buttons can be pressed
-interactable_buttons = []
-start_button_index = 3
+
+    def getDistance(self):
+        __pinSetupUltraSound(self.trigPin, self.choPin)
+
+        wpi.digitalWrite(trigPin, wpi.HIGH)
+        time.sleep(0.00001)
+        wpi.digitalWrite(trigPin, wpi.LOW)
+        while wpi.digitalRead(echoPin) == 0:
+            start_time = time.time()
+        while wpi.digitalRead(echoPin) == 1:
+            bounceback_time = time.time()
+        pulse_duration: int = bounceback_time - start_time
+        distance = round(pulse_duration * 17150, 2)
+
+        return distance
+
+
+class Speaker:
+    def play_audio(sound):
+        print("playing audio...")
+        wave_obj = sa.WaveObject.from_wave_file("sounds/" + sound)
+        play_obj = wave_obj.play()
+        play_obj.wait_done()
+
 
 game_started = False
 button_enable_delay = 1  # How much time before another button will be turned on
@@ -117,14 +123,9 @@ def start():
 
     form = "%(asctime)s: %(message)s"
     logging.basicConfig(format=form, level=logging.INFO, datefmt="%H:%M:%S")
-    #wpi.wiringPiSetup()
-
-    #initialize_sensors()
-    #initialize_speakers()
-    #initialize_matrix()
+    wpi.wiringPiSetup()
+    initialize_sensors()
     initialize_database()
-    check_esp_connection(0)
-    check_esp_connection(1)
     print("Initialization success!\n")
     print("---------------------------------\n")
 
@@ -132,12 +133,14 @@ def start():
 
 
 def initialize_database():
-    if db.is_connected() == True:
-        print("DB CONNECTION RESP: SUCCESS \n")
-        #start function that uploads sensordata every 10 minutes
-        upload_sensordata()
-    else:
-        print("DB CONNECTION RESP: FAILED \n")
+    print("DB CONNECTION RESP: SUCCESS \n")
+    # if db.is_connected() == True:
+    #     print("DB CONNECTION RESP: SUCCESS \n")
+    #     #start function that uploads sensordata every 10 minutes
+    #     upload_sensordata()
+    # else:
+    #     print("DB CONNECTION RESP: FAILED \n")
+
 
 def upload_sensordata():
     while True:
@@ -175,7 +178,13 @@ def initialize_sensors():
             print('DHT11 Sensor: {0}'.format(dht))
         except Exception as e:
             logging.exception(e)
-            break
+
+        ultraSound = Ultrasound(0, 0)
+        try:
+            distance = ultraSound.getDistance()
+            print('Ultrasound Sensor: {0}'.format(distance))
+        except Exception as e:
+            logging.exception(e)
 
         success = True
 
@@ -218,7 +227,7 @@ def check_esp_connection(esp):
     print("RESP: SUCCESS \n")
 
 
-def update_sensor_data():
+def update_sensor_data(args):
     global temperature_data
     global humidity_data
     while True:
@@ -270,10 +279,6 @@ def check_input(args):
 
 def start_game():
     print("Starting game logic...\n")
-
-    button_input = threading.Thread(target=check_input, args=(1,))
-    button_input.start()
-
     set_idle_state()
 
 
@@ -281,78 +286,7 @@ def set_idle_state():
     print("[Game phase: IDLE]")
     play_audio('bg_idle', True)
     print("Press 'p' to start")
-    set_play_state()
-    # while True:
-    #     try:
-    #         if keyboard.is_pressed('p'):
-    #             set_play_state()
-    #             break
-    #     except:
-    #         break
-
-
-def start_countdown():
-    print('Start countdown')
-    for i in range(3, 0, -1):
-        set_matrix_text(str(i), False, False)
-        print(i)
-        time.sleep(1)
-
-    print('GO!')
-    set_matrix_text("GO", True, False)
-
-
-def get_interactable_buttons():
-    return interactable_buttons
-
-
-def set_button_state(button, state):
-    print('Set button {0} state to {1}'.format(button.pin, state))
-
-    if state:
-        button.set_interactable(True)
-        buttons.remove(button)
-        interactable_buttons.append(button)
-    else:
-        button.set_interactable(False)
-        buttons.append(button)
-        interactable_buttons.remove(button)
-
-
-def set_play_state():
-    global cur_play_duration
-    global game_started
-
-    print("[Game phase: PLAY]")
-    time.sleep(1)
-    start_countdown()
-    game_started = True
-
-    while True:
-        try:
-            cur_play_duration += 1
-            print("------------")
-
-            # Check if a new button has to be turned on
-            if cur_play_duration % button_enable_delay == 0:
-                button = random.choice(buttons)
-                set_button_state(button, True)
-
-            # Check for all the buttons which are on if they have to be turned off again
-            for button in interactable_buttons:
-                button.interactable_time += 1
-
-                if button.interactable_time >= button_on_time:
-                    set_button_state(button, False)
-                    button.interactable_time = 0
-
-            # print('Game: Time left {0}'.format(duration - cur_play_duration))
-            if cur_play_duration >= session_duration:
-                set_end_state()
-                break
-            time.sleep(1)
-        except:
-            break
+    set_matrix_text("Cor- en dons Whacky adventures", True, True)
 
 
 def set_end_state(): #sends the session data to the db at the end of the session

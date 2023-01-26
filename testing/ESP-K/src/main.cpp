@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Tasks
-TaskHandle_t TSelectUpdate, TButtonUpdate, TGameTimer;
+TaskHandle_t TSelectUpdate, TButtonUpdate, TGameTimer, TReset;
 
 // Buttons
 int led_pins[] = {17, 4, 5, 6, 16, 7, 15};
@@ -21,9 +21,11 @@ int score = 0;
 int result_timer = 10000;
 bool is_idle = false;
 
+bool reset_update = false;
+
 // ESP_L
 int plus_pin = 1;
-int reset_pin = 2;
+int reset_pin = 42;
 
 void SelectUpdate(void *pvParameters)
 {
@@ -89,7 +91,7 @@ void ButtonUpdate(void *pvParameters)
       }
     }
     
-    delay(100);
+    delay(100); 
   }
 }
 
@@ -112,9 +114,10 @@ void idle() {
   bool start = false;
 
   score = 0;
-  digitalWrite(reset_pin, HIGH);
-  delay(10);
+  reset_update = true;
   digitalWrite(reset_pin, LOW);
+  delay(1);
+  digitalWrite(reset_pin, HIGH);
 
   int led_status = LOW;
   do
@@ -158,11 +161,22 @@ void GameTimer(void *pvParameters) {
     } else {
       delay(100);
     }
+    delay(1);
+  }
+}
+
+void update_reset_pin(void *pvParameters) {
+  for(;;) {
+    if (!reset_update) {
+      digitalWrite(reset_pin, HIGH);
+    }
+    delay(1);
   }
 }
 
 void create_game_tasks()
 {
+  xTaskCreatePinnedToCore(update_reset_pin, "update_reset_pin", 10000, NULL, 1, &TReset, 0);
   xTaskCreatePinnedToCore(SelectUpdate, "SelectUpdate", 10000, NULL, 1, &TSelectUpdate, 0);
   delay(200);
   xTaskCreatePinnedToCore(ButtonUpdate, "ButtonUpdate", 10000, NULL, 1, &TButtonUpdate, 0);
