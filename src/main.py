@@ -77,6 +77,23 @@ class Ultrasound:
 
         return distance
 
+class Knock:
+    def __init__(LedPin, KnockPin):
+        wpi.setmode(wpi.BOARD)
+        wpi.setup(LedPin, wpi.OUT)
+        wpi.setup(KnockPin, wpi.IN, pull_up_down=wpi.PUD_UP)
+        wpi.output(LedPin, wpi.HIGH)
+
+    def swLed(ev=None):
+        global Led_status
+        Led_status = not Led_status
+        wpi.output(LedPin, Led_status)
+        print ("LED: " + ("on" if Led_status else "off"))
+
+    def getKnock(KnockPin):
+        wpi.add_event_detect(KnockPin, wpi.FALLING, callback=swLed, bouncetime=200) # wait for falling
+
+        return knock
 
 class Speaker:
     def play_audio(sound):
@@ -183,6 +200,13 @@ def initialize_sensors():
         try:
             distance = ultraSound.getDistance()
             print('Ultrasound Sensor: {0}'.format(distance))
+        except Exception as e:
+            logging.exception(e)
+
+        knockSensor = knockSensor(0, 0)
+        try:
+            knock = knock.getKnock()
+            print('Knock: {0}'.format(knock))
         except Exception as e:
             logging.exception(e)
 
