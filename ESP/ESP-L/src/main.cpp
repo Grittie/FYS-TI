@@ -24,7 +24,6 @@ int relayLength = 0;
 int plusPin = 23;
 int resetPin = 22;
 int plusState = 0;
-int minusState = 0;
 int resetState = 0;
 
 void next_relay() {
